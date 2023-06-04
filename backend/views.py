@@ -15,6 +15,7 @@ from backend.serializers import  RegionSerializer
 from backend.models import Visiteur
 from backend.serializers import  VisiteurSerializer
 from django.contrib.auth.hashers import make_password,check_password
+import json
 # Create your views here.
 @csrf_exempt
 def EventAPI(request ,pk=0):
@@ -177,20 +178,21 @@ def VisiteurAPI(request ):
              return JsonResponse("creating visiteur Successfully", safe=False)
             return JsonResponse("user with the same email already exists", safe=False)
        return JsonResponse("error",safe=False)
- elif request.method=='GET':
-       visiteur_data = JSONParser().parse(request)
-       mdp=visiteur_data["motDePasse"]
-       visiteur_data["motDePasse"]=make_password(mdp,hasher='bcrypt')
-       visiteur_serializer = VisiteurSerializer(data=visiteur_data)
-       visiteur=Visiteur.objects.filter(email=visiteur_data["email"])
-       vis_ser= VisiteurSerializer(visiteur,many=True)
-       if  visiteur_serializer.is_valid():
-         if vis_ser.data!=[]:
-           if check_password( mdp,vis_ser.data[0]["motDePasse"]):
-            return JsonResponse("loging succesfully", safe=False)
-           return JsonResponse("mot de passe erroné", safe=False)
-         return JsonResponse("unknown user ,you should sign up first",safe=False)
-       return JsonResponse("error",safe=False)      
+ elif request.method == 'GET':
+    email = request.GET.get("email")
+    motDePasse = request.GET.get("motDePasse")
+    hashed_password = make_password(motDePasse, hasher='bcrypt')
+    visiteur = Visiteur.objects.filter(email=email)
+    if visiteur.exists():
+        if check_password(motDePasse, visiteur[0].motDePasse):
+            return JsonResponse("Login successful", safe=False)
+        else:
+            return JsonResponse("Wrong password", safe=False)
+    else:
+        return JsonResponse("Unknown user", safe=False)
+    
+    
+    
  elif request.method == 'PUT':
        visiteur_data = JSONParser().parse(request)
        visiteur =Visiteur.objects.get(email=visiteur_data['email'])
