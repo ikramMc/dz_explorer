@@ -147,8 +147,9 @@ def RegionAPI(request ,pk=0):
  elif request.method == 'POST':
        region_data = JSONParser().parse(request)
        region_serializer = RegionSerializer(data=region_data)
-       region_serializer.save()
-       return JsonResponse("creating region Successfully", safe=False)
+       if  region_serializer.is_valid():
+            region_serializer.save()
+            return JsonResponse("creating region Successfully", safe=False)
  elif request.method == 'PUT':
        event_data = JSONParser().parse(request)
        region = Evenement.objects.get(idRegion= region_data['idRegion'])
