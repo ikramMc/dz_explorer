@@ -3,6 +3,10 @@ from django.db import models
 # Create your models here.
 class Region(models.Model):
     idRegion=models.AutoField(primary_key=True) 
+    Nom=models.CharField(max_length=60)
+    zoom=models.IntegerField()
+    xcoor=models.FloatField()
+    ycoor=models.FloatField()
 
 class PointInteret(models.Model):
   idPoint=models.AutoField(primary_key=True)
