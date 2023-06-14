@@ -16,7 +16,7 @@ urlpatterns = [
     path('MoyenTransport/', views.MTAPI),
     path('MoyenTransport/<int:pk>/', views.MTAPI),
     path('Region/', views.RegionAPI),
-    path('Region/<int:pk>', views.RegionAPI),
+    path('Region/<int:pk>/', views.RegionAPI),
     path('Visiteur/', views.VisiteurAPI),
     path('Admin/', views.AdminAPI),
     path('confirm/<str:tkn>/',views.confirm_registration),
