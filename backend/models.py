@@ -19,6 +19,7 @@ class PointInteret(models.Model):
   categorie=models.CharField(max_length=25) 
   theme=models.CharField(max_length=45)
   regionId=models.ForeignKey(Region,on_delete=models.CASCADE,default=None)
+  transports=models.ManyToManyField('MoyenTransport')
 
 class Evenement(models.Model):
     idEvenement=models.AutoField(primary_key=True)
@@ -45,7 +46,6 @@ class Commentaire(models.Model):
     date=models.DateField(auto_now_add=True)
     visiteurId=models.ForeignKey(Visiteur,on_delete=models.CASCADE,default=None)
     PiId=models.ForeignKey(PointInteret,on_delete=models.CASCADE,default=None)
-    transports=models.ManyToManyField('MoyenTransport')
 
 class MoyenTransport(models.Model):
     idMoyenTransport=models.AutoField(primary_key=True)
