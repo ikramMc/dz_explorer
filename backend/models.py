@@ -45,11 +45,12 @@ class Commentaire(models.Model):
     date=models.DateField(auto_now_add=True)
     visiteurId=models.ForeignKey(Visiteur,on_delete=models.CASCADE,default=None)
     PiId=models.ForeignKey(PointInteret,on_delete=models.CASCADE,default=None)
+    transports=models.ManyToManyField('MoyenTransport')
 
 class MoyenTransport(models.Model):
     idMoyenTransport=models.AutoField(primary_key=True)
     categorie=models.CharField(max_length=50)
-    NombrePassagers=models.IntegerField()  
-    PiId=models.ForeignKey(PointInteret,on_delete=models.CASCADE,default=None)
+    NombrePassagers=models.IntegerField() 
+
 
 
