@@ -10,7 +10,7 @@ urlpatterns = [
     path('Evenement/', views.EventAPI),
     path('Evenement/<int:pk>/', views.EventAPI),
     path('PI/', views.PIAPI),
-    path('PI/<int:pk>', views.PIAPI),
+    path('PI/<int:pk>/', views.PIAPI),
     path('Commentaire/', views.CommentaireAPI),
     path('Commentaire/<int:pk>/', views.CommentaireAPI),
     path('MoyenTransport/', views.MTAPI),
@@ -18,4 +18,6 @@ urlpatterns = [
     path('Region/', views.RegionAPI),
     path('Region/<int:pk>', views.RegionAPI),
     path('Visiteur/', views.VisiteurAPI),
+    path('Admin/', views.AdminAPI),
+    path('confirm/<str:tkn>/',views.confirm_registration),
 ]

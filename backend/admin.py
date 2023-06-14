@@ -5,6 +5,7 @@ from  .models import Commentaire
 from  .models import MoyenTransport
 from  .models import Region
 from  .models import Visiteur
+from .models import Admin
 # Register your models here.
 models_list1=[PointInteret]
 admin.site.register(models_list1)
@@ -17,4 +18,6 @@ admin.site.register(models_list1)
 models_list1=[Region]
 admin.site.register(models_list1)
 models_list1=[Visiteur]
+admin.site.register(models_list1)
+models_list1=[Admin]
 admin.site.register(models_list1)

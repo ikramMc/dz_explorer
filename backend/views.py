@@ -14,8 +14,37 @@ from backend.models import Region
 from backend.serializers import  RegionSerializer
 from backend.models import Visiteur
 from backend.serializers import  VisiteurSerializer
+from backend.models import VisiteurAuth
+from backend.serializers import  VisiteurAuthSerializer
 from django.contrib.auth.hashers import make_password,check_password
+from django.utils.crypto import get_random_string
+from django.core.mail import send_mail
+from django.core.exceptions import ObjectDoesNotExist
+from django.utils.deprecation import MiddlewareMixin
+from django.conf import settings
+from rest_framework.views import APIView
+from backend.models import Admin
+from backend.serializers import AdminSerializer
+from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework import status
 # Create your views here.
+class PostView(APIView):
+    parser_classes = (MultiPartParser, FormParser)
+
+    def get(self, request, *args, **kwargs):
+        images = Image.objects.all()
+        serializer = ImageSerializer(images, many=True)
+        return Response(serializer.data)
+
+    def post(self, request, *args, **kwargs):
+        image_serializer = ImageSerializer(data=request.data)
+        if image_serializer.is_valid():
+            image_serializer.save()
+            return Response(image_serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            print('error', image_serializer.errors)
+            return Response(image_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 @csrf_exempt
 def EventAPI(request ,pk=0):
  if request.method=='GET':
@@ -36,12 +65,12 @@ def EventAPI(request ,pk=0):
        return JsonResponse("error ,make sure you have supply all the required fields ", safe=False)
  elif request.method == 'PUT':
        event_data = JSONParser().parse(request)
-       event = Evenement.objects.get(idEvenemnt=event_data['idEvenement'])
+       event = Evenement.objects.get(idEvenement=pk)
        event_serializer = EventSerializer(event, data=event_data )
        if event_serializer.is_valid():
          event_serializer.save()
          return JsonResponse("Updated Successfully", safe=False)
-       return JsonResponse("Failed To Update")	
+       return JsonResponse("Failed To Update", safe=False)	
  elif request.method == 'DELETE':
 		 event = Evenement.objects.get(idEvenement=pk)
 		 event.delete()
@@ -56,8 +85,8 @@ def PIAPI(request ,pk=0):
         pi_serializer = PISerializer(pi, many=True)
         return JsonResponse(pi_serializer.data, safe=False)
       elif(pk!=0):
-        pi= PointInteret.objects.get(idPoint=pk)
-        pi_serializer=PISerializer(pi)
+        pis= PointInteret.objects.filter(regionId=pk)
+        pi_serializer=PISerializer(pis,many=True)
         return JsonResponse(pi_serializer.data, safe=False)
  elif request.method == 'POST':
        pi_data = JSONParser().parse(request)
@@ -87,7 +116,9 @@ def CommentaireAPI(request ,pk=0):
        commentaires_serializer = CommentaireSerializer(commentaires, many=True)
        return JsonResponse(commentaires_serializer.data, safe=False)
       elif (pk==0):
-        return JsonResponse("specify the pi id",safe=False)    
+       commentaires= Commentaire.objects.filter(accept=0)
+       commentaires_serializer = CommentaireSerializer(commentaires, many=True)
+       return JsonResponse(commentaires_serializer.data, safe=False)   
  elif request.method == 'POST':
        commentaire_data = JSONParser().parse(request)
        commentaire_serializer = CommentaireSerializer(data=commentaire_data)
@@ -167,14 +198,18 @@ def VisiteurAPI(request ):
  if request.method == 'POST':
        visiteur_data = JSONParser().parse(request)
        mdp=visiteur_data["motDePasse"]
+       mdp=make_password(mdp,hasher='bcrypt')
        visiteur_data["motDePasse"]=make_password(mdp,hasher='bcrypt')
        visiteur_serializer = VisiteurSerializer(data=visiteur_data)
        visiteur=Visiteur.objects.filter(email=visiteur_data["email"])
        vis_ser= VisiteurSerializer(visiteur,many=True)
        if  visiteur_serializer.is_valid():
-            if vis_ser.data==[]:  
-             visiteur_serializer.save()
-             return JsonResponse("creating visiteur Successfully", safe=False)
+            if vis_ser.data==[]:
+             token = get_random_string(length=32)
+             VisiteurAuth.objects.create(email=visiteur_data["email"],Nom=visiteur_data["Nom"],Prenom=visiteur_data["Prenom"],NumTel=visiteur_data["NumTel"],Pays=visiteur_data["Pays"],motDePasse=mdp,token=token)
+             confirmUrl=request.build_absolute_uri(f'/confirm/{token}/')
+             send_mail('Confirm your Email',f'Click the folllowing link to confirm your email:{confirmUrl}','ki_mechitoua@esi.dz',[visiteur_data['email']],fail_silently=False)       
+             return render(request,'confirmation_sent.html')
             return JsonResponse("user with the same email already exists", safe=False)
        return JsonResponse("error",safe=False)
  elif request.method=='GET':
@@ -187,6 +222,7 @@ def VisiteurAPI(request ):
        if  visiteur_serializer.is_valid():
          if vis_ser.data!=[]:
            if check_password( mdp,vis_ser.data[0]["motDePasse"]):
+            #response.set_cookie(settings.USE_ID_COOKIE_NAME,vis_ser.data[0]["idVisiteur"],httponly=True)
             return JsonResponse("loging succesfully", safe=False)
            return JsonResponse("mot de passe erroné", safe=False)
          return JsonResponse("unknown user ,you should sign up first",safe=False)
@@ -209,3 +245,28 @@ def VisiteurAPI(request ):
            return JsonResponse("visiteur has been deleted Successfully", safe=False)
           return JsonResponse("visiteur has not been Deleted Successfully", safe=False)				
             
+@csrf_exempt
+def confirm_registration(request,tkn ):
+ if request.method == 'GET': 
+      try:
+       visiteur_data=VisiteurAuth.objects.get(token=tkn)
+       Visiteur.objects.create(email=visiteur_data.email,Nom=visiteur_data.Nom,Prenom=visiteur_data.Prenom,NumTel=visiteur_data.NumTel,Pays=visiteur_data.Pays,motDePasse=visiteur_data.motDePasse)
+       visiteur_data.delete()
+       return JsonResponse("user created seccusfully",safe=False)
+      except ObjectDoesNotExist:
+       return JsonResponse("confirmation link has expired",safe=False)
+@csrf_exempt
+ 
+def AdminAPI(request):
+ if request.method=='GET':
+       admin_data = JSONParser().parse(request)
+       mdp=admin_data["motDePasse"]
+       admin_data["motDePasse"]=make_password(mdp,hasher='bcrypt')
+       admin=Admin.objects.filter(email=admin_data["email"])
+       ad_ser= AdminSerializer(admin,many=True)
+       if ad_ser.data!=[]:
+           if check_password( mdp,ad_ser.data[0]["motDePasse"]):
+            return JsonResponse("loging succesfully", safe=False)
+           return JsonResponse("mot de passe erroné", safe=False)
+       return JsonResponse("unexisting admin",safe=False)
+  
