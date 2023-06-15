@@ -191,7 +191,24 @@ def RegionAPI(request ,pk=0):
 		  region = Region.objects.get(idEvenement=pk)
 		  region.delete()
 		  return JsonResponse(" region has been Deleted Successfully", safe=False)				
-
+@csrf_exempt
+def Login (request,pk=0):
+   if request.method=='POST':
+       visiteur_data = JSONParser().parse(request)
+       mdp=visiteur_data["motDePasse"]
+       visiteur_data["motDePasse"]=make_password(mdp,hasher='bcrypt')
+       visiteur_serializer = VisiteurSerializer(data=visiteur_data)
+       visiteur=Visiteur.objects.filter(email=visiteur_data["email"])
+       vis_ser= VisiteurSerializer(visiteur,many=True)
+       if  visiteur_serializer.is_valid():
+         if vis_ser.data!=[]:
+           if check_password( mdp,vis_ser.data[0]["motDePasse"]):
+            #response.set_cookie(settings.USE_ID_COOKIE_NAME,vis_ser.data[0]["idVisiteur"],httponly=True)
+            return JsonResponse("loging succesfully", safe=False)
+           return JsonResponse("mot de passe erroné", safe=False)
+         return JsonResponse("unknown user ,you should sign up first",safe=False)
+       return JsonResponse("error",safe=False)      
+ 
 @csrf_exempt
 def VisiteurAPI(request ):
 
@@ -212,21 +229,6 @@ def VisiteurAPI(request ):
              return render(request,'confirmation_sent.html')
             return JsonResponse("user with the same email already exists", safe=False)
        return JsonResponse("error",safe=False)
- elif request.method=='GET':
-       visiteur_data = JSONParser().parse(request)
-       mdp=visiteur_data["motDePasse"]
-       visiteur_data["motDePasse"]=make_password(mdp,hasher='bcrypt')
-       visiteur_serializer = VisiteurSerializer(data=visiteur_data)
-       visiteur=Visiteur.objects.filter(email=visiteur_data["email"])
-       vis_ser= VisiteurSerializer(visiteur,many=True)
-       if  visiteur_serializer.is_valid():
-         if vis_ser.data!=[]:
-           if check_password( mdp,vis_ser.data[0]["motDePasse"]):
-            #response.set_cookie(settings.USE_ID_COOKIE_NAME,vis_ser.data[0]["idVisiteur"],httponly=True)
-            return JsonResponse("loging succesfully", safe=False)
-           return JsonResponse("mot de passe erroné", safe=False)
-         return JsonResponse("unknown user ,you should sign up first",safe=False)
-       return JsonResponse("error",safe=False)      
  elif request.method == 'PUT':
        visiteur_data = JSONParser().parse(request)
        visiteur =Visiteur.objects.get(email=visiteur_data['email'])

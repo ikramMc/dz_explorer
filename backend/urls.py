@@ -18,6 +18,7 @@ urlpatterns = [
     path('Region/', views.RegionAPI),
     path('Region/<int:pk>/', views.RegionAPI),
     path('Visiteur/', views.VisiteurAPI),
+    path('VisiteurLogin/', views.Login),
     path('Admin/', views.AdminAPI),
     path('confirm/<str:tkn>/',views.confirm_registration),
 ]
