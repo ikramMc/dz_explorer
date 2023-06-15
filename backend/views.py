@@ -141,13 +141,15 @@ def CommentaireAPI(request ,pk=0):
 
 @csrf_exempt
 def MTAPI(request ,pk=0):
- if request.method=='GET':
-      if(pk!=0):
-        mts = MoyenTransport.objects.filter(PiId=pk)
-        mts_serializer =MTSerializer(mts, many=True)
+ if request.method == 'GET':
+    if pk != 0:
+        mts = MoyenTransport.objects.filter(pk=pk)
+        mts_serializer = MTSerializer(mts, many=True)
         return JsonResponse(mts_serializer.data, safe=False)
-      elif pk==0:
-        return JsonResponse("specify the pi id",safe=False)       
+    else:
+        mts = MoyenTransport.objects.all()
+        mts_serializer = MTSerializer(mts, many=True)
+        return JsonResponse(mts_serializer.data, safe=False)      
  elif request.method == 'POST':
        mt_data = JSONParser().parse(request)
        mt_serializer = MTSerializer(data=mt_data)
@@ -177,7 +179,8 @@ def RegionAPI(request ,pk=0):
  elif request.method == 'POST':
        region_data = JSONParser().parse(request)
        region_serializer = RegionSerializer(data=region_data)
-       region_serializer.save()
+       if region_serializer.is_valid():
+            region_serializer.save()
        return JsonResponse("creating region Successfully", safe=False)
  elif request.method == 'PUT':
        event_data = JSONParser().parse(request)

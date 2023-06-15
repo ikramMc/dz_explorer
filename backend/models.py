@@ -5,6 +5,9 @@ from django.db import models
 class Region(models.Model):
     idRegion=models.AutoField(primary_key=True) 
     designation=models.CharField(max_length=50,default="")
+    zoom=models.IntegerField(default=5)
+    xcoor=models.FloatField(default=0)
+    ycoor=models.FloatField(default=0)
 
 
 class Admin (models.Model):
@@ -38,6 +41,7 @@ class PointInteret(models.Model):
   categorie=models.CharField(max_length=50,default=" ") 
   theme=models.CharField(max_length=50,default="")
   regionId=models.ForeignKey(Region,on_delete=models.SET_NULL,null=True)
+  transports=models.ManyToManyField(to='moyentransport')
   def set_jours(self,days):
       self.jours=','.join(days)
   def get_jours(self):
@@ -82,7 +86,6 @@ class MoyenTransport(models.Model):
     idMoyenTransport=models.AutoField(primary_key=True)
     type=models.CharField(max_length=50)
     NombrePassagers=models.IntegerField()  
-    PiId=models.ForeignKey(PointInteret,on_delete=models.CASCADE,default=None)
 class PiImage(models.Model):
   id=models.AutoField(primary_key=True)
   image=models.ImageField(upload_to='images/',default=None) 
