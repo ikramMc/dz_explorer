@@ -263,7 +263,7 @@ def confirm_registration(request,tkn ):
 @csrf_exempt
  
 def AdminAPI(request):
- if request.method=='GET':
+ if request.method=='POST':
        admin_data = JSONParser().parse(request)
        mdp=admin_data["motDePasse"]
        admin_data["motDePasse"]=make_password(mdp,hasher='bcrypt')
