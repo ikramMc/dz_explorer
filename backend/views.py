@@ -85,8 +85,8 @@ def PIAPI(request ,pk=0):
         pi_serializer = PISerializer(pi, many=True)
         return JsonResponse(pi_serializer.data, safe=False)
       elif(pk!=0):
-        pis= PointInteret.objects.filter(regionId=pk)
-        pi_serializer=PISerializer(pis,many=True)
+        pi= PointInteret.objects.get(idPoint=pk)
+        pi_serializer=PISerializer(pi)
         return JsonResponse(pi_serializer.data, safe=False)
  elif request.method == 'POST':
        pi_data = JSONParser().parse(request)
@@ -173,9 +173,14 @@ def MTAPI(request ,pk=0):
 @csrf_exempt
 def RegionAPI(request ,pk=0):
  if request.method=='GET':
+      if(pk==0):
        regions = Region.objects.all()
        regions_serializer = RegionSerializer(regions, many=True)
        return JsonResponse(regions_serializer.data, safe=False)
+      elif(pk!=0):
+        pis= PointInteret.objects.filter(regionId=pk)
+        pi_serializer=PISerializer(pis,many=True)
+        return JsonResponse(pi_serializer.data, safe=False)
  elif request.method == 'POST':
        region_data = JSONParser().parse(request)
        region_serializer = RegionSerializer(data=region_data)
