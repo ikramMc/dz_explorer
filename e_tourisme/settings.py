@@ -45,9 +45,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    
+    'corsheaders',
     'backend',
-    
 ]
 
 MIDDLEWARE = [
@@ -58,11 +57,13 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-
-    
+     'corsheaders.middleware.CorsMiddleware',
 ]
 
 ROOT_URLCONF = 'e_tourisme.urls'
+
+CORS_ORIGIN_ALLOW_ALL = True
+
 
 TEMPLATES = [
     {
@@ -98,7 +99,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'e_tourisme',
         'USER':'root',
-        'PASSWORD':'tpigl20222023',
+        'PASSWORD':'walid2002',
         'HOST':'127.0.0.1',
         'PORT':'3306'
     }
