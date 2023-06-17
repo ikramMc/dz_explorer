@@ -2,6 +2,10 @@ from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.parsers import JSONParser
 from django.http.response import JsonResponse
+from django.core.files.storage import default_storage
+from rest_framework.decorators import api_view
+from rest_framework.generics import CreateAPIView
+from rest_framework.response import Response
 from backend.models import Evenement
 from backend.serializers import   EventSerializer 
 from backend.models import PointInteret
@@ -16,6 +20,10 @@ from backend.models import Visiteur
 from backend.serializers import  VisiteurSerializer
 from backend.models import VisiteurAuth
 from backend.serializers import  VisiteurAuthSerializer
+from backend.models import PiImg
+from backend.serializers import  PiImageSerializer
+from backend.models import eventImage
+from backend.serializers import  EvImageSerializer
 from django.contrib.auth.hashers import make_password,check_password
 from django.utils.crypto import get_random_string
 from django.core.mail import send_mail
@@ -27,17 +35,36 @@ from backend.models import Admin
 from backend.serializers import AdminSerializer
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework import status
+from math import sin,cos,sqrt,atan2,radians
+from  django.db.models import F,Func
+
 # Create your views here.
-class PostView(APIView):
+class PiImage(APIView):
     parser_classes = (MultiPartParser, FormParser)
 
     def get(self, request, *args, **kwargs):
-        images = Image.objects.all()
-        serializer = ImageSerializer(images, many=True)
+        images =PiImg.objects.all()
+        serializer = PiImageSerializer(images, many=True)
         return Response(serializer.data)
 
     def post(self, request, *args, **kwargs):
-        image_serializer = ImageSerializer(data=request.data)
+        image_serializer = PiImageSerializer(data=request.data)
+        if image_serializer.is_valid():
+            image_serializer.save()
+            return Response(image_serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            print('error', image_serializer.errors)
+            return Response(image_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+class EvImage(APIView):
+    parser_classes = (MultiPartParser, FormParser)
+
+    def get(self, request, *args, **kwargs):
+        images = eventImage.objects.all()
+        serializer = EvImageSerializer(images, many=True)
+        return Response(serializer.data)
+
+    def post(self, request, *args, **kwargs):
+        image_serializer = EvImageSerializer(data=request.data)
         if image_serializer.is_valid():
             image_serializer.save()
             return Response(image_serializer.data, status=status.HTTP_201_CREATED)
@@ -93,7 +120,7 @@ def PIAPI(request ,pk=0):
        pi_serializer = PISerializer(data=pi_data)
        if pi_serializer.is_valid():
          pi_serializer.save()
-         return JsonResponse("creating PI Successfully", safe=False)
+         return JsonResponse(["creating PI Successfully",pi_serializer.data['idPoint']], safe=False)
        return JsonResponse("error ,make sure you have supply all the required fields ", safe=False)
  elif request.method == 'PUT':
        pi_data = JSONParser().parse(request)
@@ -265,8 +292,10 @@ def confirm_registration(request,tkn ):
        return JsonResponse("user created seccusfully",safe=False)
       except ObjectDoesNotExist:
        return JsonResponse("confirmation link has expired",safe=False)
+
+
 @csrf_exempt
- 
+
 def AdminAPI(request):
  if request.method=='POST':
        admin_data = JSONParser().parse(request)
@@ -279,4 +308,33 @@ def AdminAPI(request):
             return JsonResponse("loging succesfully", safe=False)
            return JsonResponse("mot de passe erroné", safe=False)
        return JsonResponse("unexisting admin",safe=False)
-  
+@csrf_exempt
+def Diffrence(lat1,lon1,lat2,lon2):
+    lat1 = radians(lat1)
+    lon1 = radians(lon1)
+    lat2 = radians(lat2)
+    lon2 = radians(lon2)
+
+    # Rayon moyen de la Terre en mètres
+    radius = 6371.0 * 1000 # en mètres
+
+    # Différence de latitude et de longitude
+    dlat = lat2 - lat1
+    dlon = lon2 - lon1
+
+    # Formule de la distance de Haversine
+    a = sin(dlat / 2)**2 + cos(lat1) * cos(lat2) * sin(dlon / 2)**2
+    c = 2 * atan2(sqrt(a), sqrt(1 - a))
+
+    distance = radius * c
+    return distance
+def ActualitesAPI(request,pk=0):
+    if(request.method=='GET'):
+      actualites_data = JSONParser().parse(request)
+      lat=actualites_data["latitude"]
+      lng=actualites_data["longitude"]
+      dist=Diffrence(45,12,25,23)
+      print(dist)
+      closest_events=PointInteret.objects.annotate(distance=Diffrence(lat,lng,F('latitude'),F('longitude'))).order_by('distance')[:10]
+      actSer=EventSerializer(closest_events,many=True)      
+    return JsonResponse(actSer.data,safe=False)

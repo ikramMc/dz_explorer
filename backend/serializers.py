@@ -6,7 +6,7 @@ from backend.models import Region
 from backend.models import Visiteur
 from backend.models import VisiteurAuth
 from backend.models import Admin
-from backend.models import PiImage
+from backend.models import PiImg
 from backend.models import eventImage
 from rest_framework import fields,serializers
 
@@ -68,11 +68,11 @@ class AdminSerializer (serializers.ModelSerializer):
  class Meta:
   model=Admin
   fields='__all__'
-class ImageSerializer (serializers.ModelSerializer):
+class   PiImageSerializer (serializers.ModelSerializer):
  class Meta:
-  model=PiImage
+  model=PiImg
   fields='__all__'
-class ImageSerializer (serializers.ModelSerializer):
+class EvImageSerializer (serializers.ModelSerializer):
  class Meta:
   model=eventImage
   fields='__all__' 

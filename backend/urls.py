@@ -20,5 +20,9 @@ urlpatterns = [
     path('Visiteur/', views.VisiteurAPI),
     path('VisiteurLogin/', views.Login),
     path('Admin/', views.AdminAPI),
+    path('actualites/',views.ActualitesAPI),
     path('confirm/<str:tkn>/',views.confirm_registration),
+    path('PiImage/', views.PiImage.as_view(), name= 'image_list1'),
+    path('EvImage/', views.EvImage.as_view(), name= 'image_list2'),
+
 ]

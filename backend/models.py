@@ -86,14 +86,14 @@ class MoyenTransport(models.Model):
     idMoyenTransport=models.AutoField(primary_key=True)
     type=models.CharField(max_length=50)
     NombrePassagers=models.IntegerField()  
-class PiImage(models.Model):
-  id=models.AutoField(primary_key=True)
-  image=models.ImageField(upload_to='images/',default=None) 
-  piId=models.ForeignKey(PointInteret,on_delete=models.CASCADE,default=None)
  
 class eventImage(models.Model):
   id=models.AutoField(primary_key=True)
   image=models.ImageField(upload_to='images/',default=None) 
   eventId=models.ForeignKey(Evenement,on_delete=models.CASCADE,default=None)
+class PiImg(models.Model):
+  id=models.AutoField(primary_key=True)
+  image=models.ImageField(upload_to='images/',default=None) 
+  piId=models.ForeignKey(PointInteret,on_delete=models.CASCADE,default=None)
  
   
