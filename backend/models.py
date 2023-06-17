@@ -37,7 +37,7 @@ class PointInteret(models.Model):
   jours=models.CharField(max_length=100,choices=JOUR_CHOICES,blank=True)
   heureOuverture=models.TimeField(null=False,default="00:00:00")
   heureFermeture=models.TimeField(null=False,default="00:00:00")
-  rate=models.IntegerField(default=0)
+  rate=models.FloatField(default=0)
   categorie=models.CharField(max_length=50,default=" ") 
   theme=models.CharField(max_length=50,default="")
   regionId=models.ForeignKey(Region,on_delete=models.SET_NULL,null=True)
