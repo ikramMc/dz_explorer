@@ -24,5 +24,5 @@ urlpatterns = [
     path('confirm/<str:tkn>/',views.confirm_registration),
     path('PiImage/', views.PiImage.as_view(), name= 'image_list1'),
     path('EvImage/', views.EvImage.as_view(), name= 'image_list2'),
-
+    path('createAdmin/',views.CreateAdminApi),
 ]

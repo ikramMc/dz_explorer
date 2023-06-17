@@ -300,14 +300,24 @@ def AdminAPI(request):
  if request.method=='POST':
        admin_data = JSONParser().parse(request)
        mdp=admin_data["motDePasse"]
-       admin_data["motDePasse"]=make_password(mdp,hasher='bcrypt')
+       print(mdp)
        admin=Admin.objects.filter(email=admin_data["email"])
        ad_ser= AdminSerializer(admin,many=True)
        if ad_ser.data!=[]:
-           if check_password( mdp,ad_ser.data[0]["motDePasse"]):
+           if  mdp==ad_ser.data[0]["motDePasse"]:
             return JsonResponse("loging succesfully", safe=False)
            return JsonResponse("mot de passe erroné", safe=False)
        return JsonResponse("unexisting admin",safe=False)
+@csrf_exempt
+def CreateAdminApi(request):
+      if(request.method=='POST'):
+            admin=JSONParser().parse(request)
+            ad_ser=AdminSerializer(data=admin)
+            if ad_ser.is_valid():
+              ad_ser.save()
+              return JsonResponse("creating admin succesfully",safe=False)
+            return JsonResponse("error",safe=False)
+
 @csrf_exempt
 def Diffrence(lat1,lon1,lat2,lon2):
     lat1 = radians(lat1)
